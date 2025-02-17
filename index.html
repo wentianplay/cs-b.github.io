@@ -1,102 +1,118 @@
-:<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
-    <title>网络安全攻防模拟</title>
+    <title>文天玩初级网络安全攻防模拟</title>
     <style>
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            font-family: Arial, sans-serif;
-        }
-        .attack-section {
-            border: 1px solid #ccc;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 5px;
-        }
-        .code {
-            background-color: #f5f5f5;
-            padding: 10px;
-            margin: 10px 0;
-        }
-        .result {
-            color: red;
-            margin-top: 10px;
-        }
-        button {
-            padding: 5px 15px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
+        .section { margin: 30px 0; padding: 20px; border: 1px solid #ccc; border-radius: 5px; }
+        .hacked { background-color: #ffe6e6; }
+        pre { background: #f4f4f4; padding: 10px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>网络安全攻防模拟器</h1>
-        
-        <!-- XSS攻击模拟 -->
-        <div class="attack-section">
+        <h1>文天玩初级网络安全攻防模拟</h1>
+        <p>⚠️ 本页面为教学演示用途，所有漏洞均为模拟场景</p>
+
+        <!-- XSS模拟 -->
+        <div class="section" id="xss-section">
             <h2>XSS攻击模拟</h2>
-            <div class="code">
-                评论功能模拟（输入内容将直接显示）：
-                <input type="text" id="commentInput">
-                <button onclick="postComment()">提交评论</button>
-                <div id="comments"></div>
-            </div>
-            <button onclick="showHint('xss')">显示提示</button>
-            <div id="xssHint" class="hint"></div>
+            <input type="text" id="xss-input" placeholder="输入你的XSS payload">
+            <button onclick="simulateXSS()">提交</button>
+            <div id="xss-output"></div>
         </div>
 
         <!-- SQL注入模拟 -->
-        <div class="attack-section">
+        <div class="section" id="sql-section">
             <h2>SQL注入模拟</h2>
-            <div class="code">
-                用户登录模拟（输入用户名）：
-                <input type="text" id="usernameInput">
-                <button onclick="checkLogin()">检查用户</button>
-                <div id="sqlResult"></div>
-            </div>
-            <button onclick="showHint('sql')">显示提示</button>
-            <div id="sqlHint" class="hint"></div>
+            <input type="text" id="sql-input" placeholder="输入用户ID">
+            <button onclick="simulateSQLi()">查询</button>
+            <pre id="sql-output"></pre>
+        </div>
+
+        <!-- 密码破解模拟 -->
+        <div class="section" id="crack-section">
+            <h2>弱密码破解模拟</h2>
+            <button onclick="crackPassword()">开始暴力破解</button>
+            <div id="crack-output"></div>
+        </div>
+
+        <!-- 文件上传模拟 -->
+        <div class="section" id="upload-section">
+            <h2>文件上传漏洞模拟</h2>
+            <input type="file" id="file-input">
+            <button onclick="uploadFile()">上传文件</button>
+            <div id="upload-output"></div>
         </div>
     </div>
 
     <script>
-        // XSS攻击演示
-        function postComment() {
-            const comment = document.getElementById('commentInput').value;
-            document.getElementById('comments').innerHTML += 
-                `<div>用户评论：${comment}</div>`;
-        }
+        // 模拟数据库
+        const fakeDB = [
+            { id: 1, name: 'Alice', email: 'alice@example.com' },
+            { id: 2, name: 'Bob', email: 'bob@example.com' }
+        ];
 
-        // SQL注入演示
-        function checkLogin() {
-            const username = document.getElementById('usernameInput').value;
-            // 模拟不安全的SQL拼接
-            const fakeSQL = `SELECT * FROM users WHERE username = '${username}'`;
+        // XSS模拟
+        function simulateXSS() {
+            const input = document.getElementById('xss-input').value;
+            const output = document.getElementById('xss-output');
+            output.innerHTML = `搜索结果：${input}`;
             
-            // 模拟注入结果
-            const resultDiv = document.getElementById('sqlResult');
-            if (username.includes("' OR '1'='1")) {
-                resultDiv.innerHTML = "登录成功！用户列表：admin, user1, guest";
-            } else {
-                resultDiv.innerHTML = `执行的SQL: ${fakeSQL}<br>未找到用户`;
+            if(input.includes('<script>')) {
+                output.innerHTML += '<br>⚠️ XSS攻击检测到！';
+                output.parentElement.classList.add('hacked');
+                // 模拟cookie窃取
+                setTimeout(() => alert(`[模拟] Cookie被盗取：${document.cookie}`), 500);
             }
         }
 
-        // 显示提示信息
-        function showHint(type) {
-            const hints = {
-                xss: "XSS攻击提示：尝试输入 <script>alert('XSS')</script> 或者 <img src='x' onerror='alert(1)'>",
-                sql: "SQL注入提示：尝试输入 ' OR '1'='1 或者 admin' -- "
-            };
-            document.getElementById(type + 'Hint').innerHTML = `
-                <p>漏洞原理：${hints[type]}</p>
-                <p>防御方法：${type === 'xss' ? '对用户输入进行HTML转义' : '使用参数化查询'}</p>
-            `;
+        // SQL注入模拟
+        function simulateSQLi() {
+            const input = document.getElementById('sql-input').value;
+            const output = document.getElementById('sql-output');
+            
+            // 模拟拼接SQL语句
+            const sql = `SELECT * FROM users WHERE id = ${input}`;
+            output.textContent = `执行SQL：\n${sql}\n\n结果：\n`;
+            
+            if(input.includes('1 OR 1=1')) {
+                output.textContent += JSON.stringify(fakeDB, null, 2);
+                output.parentElement.classList.add('hacked');
+            } else {
+                const result = fakeDB.find(item => item.id == input);
+                output.textContent += result ? JSON.stringify(result) : '未找到结果';
+            }
+        }
+
+        // 弱密码破解模拟
+        function crackPassword() {
+            const passwords = ['123456', 'password', 'admin', 'qwerty', 'letmein'];
+            const output = document.getElementById('crack-output');
+            let found = false;
+
+            passwords.forEach((pwd, index) => {
+                setTimeout(() => {
+                    output.innerHTML += `尝试密码：${'*'.repeat(pwd.length)}<br>`;
+                    if(pwd === 'admin') {
+                        output.innerHTML += '✅ 破解成功！密码是：admin';
+                        found = true;
+                    }
+                }, index * 500);
+            });
+        }
+
+        // 文件上传模拟
+        function uploadFile() {
+            const file = document.getElementById('file-input').files[0];
+            const output = document.getElementById('upload-output');
+            
+            if(file && file.name.endsWith('.php')) {
+                output.innerHTML = '⚠️ 检测到PHP文件上传！<br>[模拟] WebShell已上传';
+                output.parentElement.classList.add('hacked');
+            } else {
+                output.innerHTML = '文件上传成功（模拟）';
+            }
         }
     </script>
 </body>
