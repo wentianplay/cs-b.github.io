@@ -1,159 +1,103 @@
 :<!DOCTYPE html>
-<html lang="zh">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文天玩网络模拟攻防初级版</title>
+    <title>网络安全攻防模拟</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-        header {
-            background: #333;
-            color: #fff;
-            padding: 10px 20px;
-        }
-        nav ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        nav ul li {
-            display: inline;
-            margin-right: 15px;
-        }
-        nav ul li a {
-            color: #fff;
-            text-decoration: none;
-        }
-        main {
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
             padding: 20px;
-            background-color: #fff;
+            font-family: Arial, sans-serif;
         }
-        section {
-            margin-bottom: 20px;
-        }
-        h2 {
-            border-bottom: 2px solid #333;
-            padding-bottom: 5px;
-        }
-        #attacker-view, #defender-view {
+        .attack-section {
             border: 1px solid #ccc;
-            margin-bottom: 10px;
-            padding: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
         }
-        #attacker-canvas, #defender-canvas {
-            width: 100%;
-            height: 300px;
-            background-color: #eaeaea;
+        .code {
+            background-color: #f5f5f5;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .result {
+            color: red;
+            margin-top: 10px;
         }
         button {
-            padding: 10px 15px;
-            background-color: #5cb85c;
+            padding: 5px 15px;
+            background-color: #4CAF50;
             color: white;
             border: none;
             cursor: pointer;
         }
-        button:hover {
-            background-color: #4cae4c;
-        }
-        footer {
-            text-align: center;
-            padding: 10px 20px;
-            background: #333;
-            color: #fff;
-            position: relative;
-            bottom: 0;
-            width: 100%;
-        }
     </style>
 </head>
 <body>
-    <header>
-        <h1>文天玩网络模拟攻防初级版</h1>
-        <nav>
-            <ul>
-                <li><a href="#simulation">模拟攻防</a></li>
-                <li><a href="#learning">学习模块</a></li>
-                <li><a href="#quiz">测验</a></li>
-            </ul>
-        </nav>
-    </header>
-    <main>
-        <section id="simulation">
-            <h2>模拟攻防</h2>
-            <div id="attacker-view">
-                <h3>攻击者视图</h3>
-                <canvas id="attacker-canvas"></canvas>
+    <div class="container">
+        <h1>网络安全攻防模拟器</h1>
+        
+        <!-- XSS攻击模拟 -->
+        <div class="attack-section">
+            <h2>XSS攻击模拟</h2>
+            <div class="code">
+                评论功能模拟（输入内容将直接显示）：
+                <input type="text" id="commentInput">
+                <button onclick="postComment()">提交评论</button>
+                <div id="comments"></div>
             </div>
-            <div id="defender-view">
-                <h3>防御者视图</h3>
-                <canvas id="defender-canvas"></canvas>
+            <button onclick="showHint('xss')">显示提示</button>
+            <div id="xssHint" class="hint"></div>
+        </div>
+
+        <!-- SQL注入模拟 -->
+        <div class="attack-section">
+            <h2>SQL注入模拟</h2>
+            <div class="code">
+                用户登录模拟（输入用户名）：
+                <input type="text" id="usernameInput">
+                <button onclick="checkLogin()">检查用户</button>
+                <div id="sqlResult"></div>
             </div>
-            <button id="start-simulation">开始模拟</button>
-        </section>
-        <section id="learning">
-            <h2>学习模块</h2>
-            <div id="learning-content">
-                <p>这里是一些基础知识和常见攻击手法的说明。</p>
-                <button id="show-more">显示更多</button>
-                <div id="more-content" style="display: none;">
-                    <p>这里是更详细的安全知识，涵盖了各种网络攻击的类型及其防御措施。</p>
-                </div>
-            </div>
-        </section>
-        <section id="quiz">
-            <h2>测验</h2>
-            <div id="quiz-content">
-                <p>测验内容将在这里出现。</p>
-                <button id="start-quiz">开始测验</button>
-                <div id="quiz-questions" style="display: none;">
-                    <p>1. 网络攻击的常见类型包括哪些？</p>
-                    <p>选择一个答案： 
-                        <select id="quiz-answer">
-                            <option value="">请选择</option>
-                            <option value="DDoS">DDoS</option>
-                            <option value="Phishing">Phishing</option>
-                            <option value="Malware">Malware</option>
-                        </select>
-                    </p>
-                    <button id="submit-answer">提交答案</button>
-                    <p id="result" style="display: none;"></p>
-                </div>
-            </div>
-        </section>
-    </main>
-    <footer>
-        <p>&copy; 2023 文天玩网络模拟攻防初级版</p>
-    </footer>
+            <button onclick="showHint('sql')">显示提示</button>
+            <div id="sqlHint" class="hint"></div>
+        </div>
+    </div>
 
     <script>
-        document.getElementById('start-simulation').addEventListener('click', function() {
-            alert("模拟开始！");
-            // 可以在这里添加更多的模拟逻辑
-        });
+        // XSS攻击演示
+        function postComment() {
+            const comment = document.getElementById('commentInput').value;
+            document.getElementById('comments').innerHTML += 
+                `<div>用户评论：${comment}</div>`;
+        }
 
-        document.getElementById('show-more').addEventListener('click', function() {
-            const moreContent = document.getElementById('more-content');
-            moreContent.style.display = moreContent.style.display === "none" ? "block" : "none";
-        });
-
-        document.getElementById('start-quiz').addEventListener('click', function() {
-            document.getElementById('quiz-questions').style.display = "block";
-        });
-
-        document.getElementById('submit-answer').addEventListener('click', function() {
-            const selectedAnswer = document.getElementById('quiz-answer').value;
-            const resultElement = document.getElementById('result');
-            if (selectedAnswer) {
-                resultElement.textContent = "你选择的答案是：" + selectedAnswer;
+        // SQL注入演示
+        function checkLogin() {
+            const username = document.getElementById('usernameInput').value;
+            // 模拟不安全的SQL拼接
+            const fakeSQL = `SELECT * FROM users WHERE username = '${username}'`;
+            
+            // 模拟注入结果
+            const resultDiv = document.getElementById('sqlResult');
+            if (username.includes("' OR '1'='1")) {
+                resultDiv.innerHTML = "登录成功！用户列表：admin, user1, guest";
             } else {
-                resultElement.textContent = "请先选择一个答案。";
+                resultDiv.innerHTML = `执行的SQL: ${fakeSQL}<br>未找到用户`;
             }
-            resultElement.style.display = "block";
-        });
+        }
+
+        // 显示提示信息
+        function showHint(type) {
+            const hints = {
+                xss: "XSS攻击提示：尝试输入 <script>alert('XSS')</script> 或者 <img src='x' onerror='alert(1)'>",
+                sql: "SQL注入提示：尝试输入 ' OR '1'='1 或者 admin' -- "
+            };
+            document.getElementById(type + 'Hint').innerHTML = `
+                <p>漏洞原理：${hints[type]}</p>
+                <p>防御方法：${type === 'xss' ? '对用户输入进行HTML转义' : '使用参数化查询'}</p>
+            `;
+        }
     </script>
 </body>
 </html>
